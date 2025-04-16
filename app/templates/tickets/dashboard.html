@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - IT Helpdesk{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Ticket Dashboard</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('tickets.submit_ticket') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Submit New Ticket
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    {% if current_user.role in ['agent', 'admin'] %}
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Open Tickets</h5>
+                    <p class="card-text display-6">{{ tickets|selectattr('status', 'equalto', 'Open')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">In Progress</h5>
+                    <p class="card-text display-6">{{ tickets|selectattr('status', 'equalto', 'In Progress')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Response</h5>
+                    <p class="card-text display-6">{{ tickets|selectattr('status', 'equalto', 'Pending User Response')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Resolved</h5>
+                    <p class="card-text display-6">{{ tickets|selectattr('status', 'equalto', 'Resolved')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">All Tickets</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Category</th>
+                        <th>Created</th>
+                        <th>Last Updated</th>
+                        {% if current_user.role in ['agent', 'admin'] %}
+                            <th>Assigned To</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        <tr>
+                            <td><a href="{{ url_for('tickets.view_ticket', ticket_id=ticket.id) }}">#{{ ticket.id }}</a></td>
+                            <td>{{ ticket.subject }}</td>
+                            <td>
+                                <span class="ticket-status status-{{ ticket.status.lower().replace(' ', '-') }}">
+                                    {{ ticket.status }}
+                                </span>
+                            </td>
+                            <td>{{ ticket.priority }}</td>
+                            <td>{{ ticket.category }}</td>
+                            <td>{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            {% if current_user.role in ['agent', 'admin'] %}
+                                <td>{{ ticket.assigned_agent.username if ticket.assigned_agent else 'Unassigned' }}</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

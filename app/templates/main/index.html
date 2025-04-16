@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Home - IT Helpdesk{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Welcome to IT Helpdesk</h1>
+        <p class="lead">Submit and track your IT support tickets in one place.</p>
+        
+        {% if current_user.is_authenticated %}
+            <h2 class="mt-4">Recent Tickets</h2>
+            {% if tickets %}
+                <div class="list-group">
+                    {% for ticket in tickets %}
+                        <a href="{{ url_for('tickets.view_ticket', ticket_id=ticket.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">#{{ ticket.id }} - {{ ticket.subject }}</h5>
+                                <small class="text-muted">{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <p class="mb-1">{{ ticket.description[:100] }}{% if ticket.description|length > 100 %}...{% endif %}</p>
+                            <small>
+                                <span class="ticket-status status-{{ ticket.status.lower().replace(' ', '-') }}">
+                                    {{ ticket.status }}
+                                </span>
+                                <span class="ms-2">Priority: {{ ticket.priority }}</span>
+                            </small>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No tickets found.</p>
+            {% endif %}
+        {% else %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Get Started</h5>
+                    <p class="card-text">Please log in to submit and track your support tickets.</p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">Register</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quick Links</h5>
+                <ul class="list-unstyled">
+                    {% if current_user.is_authenticated %}
+                        <li class="mb-2">
+                            <a href="{{ url_for('tickets.submit_ticket') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-plus-circle"></i> Submit New Ticket
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ url_for('tickets.dashboard') }}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-list-ul"></i> View All Tickets
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="mb-2">
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-person-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
