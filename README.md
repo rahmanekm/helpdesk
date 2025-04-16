@@ -1,4 +1,4 @@
-# IT Helpdesk Ticketing System
+# IT Helpdesk
 
 A comprehensive internal IT helpdesk ticketing application built with Flask and MySQL.
 
@@ -22,7 +22,7 @@ A comprehensive internal IT helpdesk ticketing application built with Flask and 
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/rahmanekm/helpdesk.git
 cd helpdesk
 ```
 
@@ -33,4 +33,6 @@ python -m venv .venv
 ```
 
 3. Install dependencies:
+```bash
+pip install -r requirements.txt
 ```
