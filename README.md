@@ -58,7 +58,7 @@ pip install gunicorn
 
 2. Run with Gunicorn:
 ```bash
-gunicorn -w 4 -b 0.0.0.0:8000 app:app
+gunicorn -w 4 -b 0.0.0.0:8000 wsgi:app
 ```
 
 3. Configure Nginx as a reverse proxy (recommended for production):
@@ -79,8 +79,8 @@ server {
 Create a `.env` file in the root directory with the following variables:
 ```
 FLASK_APP=app.py
-FLASK_ENV=development  # or production
-SECRET_KEY=your_secret_key
+FLASK_ENV=production
+SECRET_KEY=your-secret-key
 DATABASE_URL=mysql://username:password@localhost/helpdesk
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
