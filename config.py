@@ -7,7 +7,7 @@ load_dotenv(os.path.join(basedir, '.env'))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-please-change-in-production'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql://root:"StrongPass#2025"@localhost/helpdesk'
+        'mysql+mysqldb://user:password@host:port/database'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Mail settings
