@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from . import tickets
 from .. import db, mail
-from ..models import Ticket, Comment, Attachment, User, TicketStatus, TicketPriority, TicketTag, Asset, AuditLog, Category, CustomField
+from ..models import Ticket, Comment, Attachment, User, TicketStatus, TicketPriority, TicketTag, Asset, AuditLog, Category, CustomField, TicketCustomField, SLAViolation
 from .forms import TicketForm, CommentForm, TicketFilterForm, MergeTicketForm, CustomFieldForm, TicketUpdateForm
 from flask_mail import Message
 from datetime import datetime, timedelta
@@ -169,6 +169,13 @@ def update_ticket(ticket_id):
         ticket.status_id = form.status.data
         ticket.priority_id = form.priority.data
         ticket.assigned_agent_id = form.assigned_to.data if form.assigned_to.data != 0 else None
+        
+        # Update closed_at field if status is changed to a closed status
+        new_status = TicketStatus.query.get(form.status.data)
+        if new_status and new_status.is_closed and not ticket.closed_at:
+            ticket.closed_at = datetime.utcnow()
+        elif new_status and not new_status.is_closed:
+            ticket.closed_at = None
         
         # Create audit log for changes
         changes = {}
@@ -406,4 +413,54 @@ def assigned_tickets():
     return render_template('tickets/list.html',
                          tickets=tickets_list,
                          pagination=pagination,
-                         title='Assigned Tickets') 
+                         title='Assigned Tickets')
+
+@tickets.route('/tickets/<int:ticket_id>/delete', methods=['POST'])
+@login_required
+def delete_ticket(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+    
+    # Check if user has permission to delete
+    if not (current_user.role in ['admin', 'agent'] or ticket.submitter_id == current_user.id):
+        flash('You do not have permission to delete this ticket.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    try:
+        # Delete related records first
+        # Delete comments
+        Comment.query.filter_by(ticket_id=ticket.id).delete()
+        
+        # Delete attachments
+        Attachment.query.filter_by(ticket_id=ticket.id).delete()
+        
+        # Delete custom fields
+        TicketCustomField.query.filter_by(ticket_id=ticket.id).delete()
+        
+        # Delete SLA violations
+        SLAViolation.query.filter_by(ticket_id=ticket.id).delete()
+        
+        # Delete audit logs
+        AuditLog.query.filter_by(entity_type='ticket', entity_id=ticket.id).delete()
+        
+        # Create audit log for the deletion
+        log = AuditLog(
+            action='delete',
+            entity_type='ticket',
+            entity_id=ticket.id,
+            user_id=current_user.id,
+            changes={'ticket_id': ticket.id, 'subject': ticket.subject},
+            ip_address=get_client_ip()
+        )
+        db.session.add(log)
+        
+        # Finally delete the ticket
+        db.session.delete(ticket)
+        db.session.commit()
+        
+        flash('Ticket has been deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while deleting the ticket.', 'danger')
+        current_app.logger.error(f'Error deleting ticket {ticket_id}: {str(e)}')
+    
+    return redirect(url_for('main.dashboard')) 

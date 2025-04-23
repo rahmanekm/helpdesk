@@ -70,7 +70,7 @@ class Config:
     
     # API configuration
     API_VERSION = '1.0'
-    API_TITLE = 'IT Helpdesk API'
+    API_TITLE = 'Forefront IT Helpdesk API'
     API_DEFAULT_FORMAT = 'json'
     API_KEY_PREFIX = 'Bearer'
     
@@ -100,6 +100,8 @@ class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
     REMEMBER_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
     
     # Production performance settings
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -112,10 +114,22 @@ class ProductionConfig(Config):
     # Production caching settings
     CACHE_TYPE = 'redis'
     CACHE_DEFAULT_TIMEOUT = 600
+    CACHE_REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
     
     # Production email settings
     MAIL_FAIL_SILENTLY = True
     MAIL_MAX_EMAILS = 1000
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    
+    # Security headers
+    SECURITY_HEADERS = {
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'SAMEORIGIN',
+        'X-XSS-Protection': '1; mode=block',
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
+    }
 
 class TestingConfig(Config):
     TESTING = True

@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, session
 from flask_login import login_required, current_user
 from ..models import User, db, AuditLog
-from .forms import UserForm, PasswordForm, PasswordResetRequestForm, PasswordResetForm
+from .forms import UserForm, PasswordForm, PasswordResetRequestForm, PasswordResetForm, RegistrationPasswordForm
 from ..decorators import admin_required
 from ..email import send_email
 import secrets
@@ -21,6 +21,16 @@ def list_users():
 @login_required
 @admin_required
 def create_user():
+    # Check if registration password is verified
+    if not session.get('admin_registration_verified'):
+        form = RegistrationPasswordForm()
+        if form.validate_on_submit():
+            if form.registration_password.data == "Forefrontcsez@999":
+                session['admin_registration_verified'] = True
+                return redirect(url_for('users.create_user'))
+            flash('Invalid registration password.')
+        return render_template('auth/register_password.html', form=form)
+    
     form = UserForm()
     if form.validate_on_submit():
         user = User(
@@ -47,6 +57,8 @@ def create_user():
             html_body=render_template('email/new_user.html', user=user, password=temp_password)
         )
         
+        # Clear the registration verification
+        session.pop('admin_registration_verified', None)
         flash('User created successfully. A temporary password has been sent to their email.', 'success')
         return redirect(url_for('.list_users'))
     return render_template('users/create.html', form=form)

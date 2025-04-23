@@ -243,6 +243,9 @@ class ArticleComment(db.Model):
     # Foreign Keys
     article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Relationships
+    author = db.relationship('User', backref='article_comments')
 
 # Custom Fields
 class CustomField(db.Model):

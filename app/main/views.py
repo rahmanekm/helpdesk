@@ -25,11 +25,27 @@ def dashboard():
         desc(Article.created_at)
     ).limit(3).all()
     
-    # Get statistics
+    # Get statistics with proper joins and filters
     total_tickets = Ticket.query.count()
-    open_tickets = Ticket.query.join(TicketStatus).filter(TicketStatus.is_closed == False).count()
-    my_tickets = Ticket.query.filter_by(assigned_agent_id=current_user.id).count()
-    overdue_tickets = Ticket.query.filter(Ticket.due_date < datetime.utcnow()).count()
+    
+    # Count open tickets (not closed)
+    open_tickets = Ticket.query.join(TicketStatus).filter(
+        TicketStatus.is_closed == False
+    ).count()
+    
+    # Count tickets where user is either submitter or assigned agent
+    my_tickets = Ticket.query.filter(
+        (Ticket.submitter_id == current_user.id) | 
+        (Ticket.assigned_agent_id == current_user.id)
+    ).count()
+    
+    # Count overdue tickets (not closed and past due date)
+    overdue_tickets = Ticket.query.join(TicketStatus).filter(
+        and_(
+            TicketStatus.is_closed == False,
+            Ticket.due_date < datetime.utcnow()
+        )
+    ).count()
     
     # Get ticket statistics by category
     categories = Category.query.all()

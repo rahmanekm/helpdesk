@@ -1,4 +1,4 @@
-# IT Helpdesk
+# Forefront IT Helpdesk
 
 A comprehensive internal IT helpdesk ticketing application built with Flask and MySQL.
 
