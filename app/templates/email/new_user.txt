@@ -1,0 +1,14 @@
+Dear {{ user.username }},
+
+Welcome to the Helpdesk! Your account has been created successfully.
+
+Your login credentials are:
+Username: {{ user.username }}
+Password: {{ password }}
+
+Please log in and change your password immediately for security reasons.
+
+You can access the helpdesk at: {{ url_for('main.index', _external=True) }}
+
+Best regards,
+The Helpdesk Team 

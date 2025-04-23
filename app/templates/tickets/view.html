@@ -1,134 +1,270 @@
 {% extends "base.html" %}
 
-{% block title %}Ticket #{{ ticket.id }} - IT Helpdesk{% endblock %}
+{% block title %}Ticket #{{ ticket.id }} - {{ ticket.subject }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tickets.css') }}">
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Ticket #{{ ticket.id }} - {{ ticket.subject }}</h4>
-                <span class="ticket-status status-{{ ticket.status.lower().replace(' ', '-') }}">
-                    {{ ticket.status }}
-                </span>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <p><strong>Category:</strong> {{ ticket.category }}</p>
-                        <p><strong>Priority:</strong> {{ ticket.priority }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Submitted by:</strong> {{ ticket.submitter.username }}</p>
-                        <p><strong>Created:</strong> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                        {% if ticket.assigned_agent %}
-                            <p><strong>Assigned to:</strong> {{ ticket.assigned_agent.username }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <h5>Description</h5>
-                    <p class="card-text">{{ ticket.description }}</p>
-                </div>
-                {% if ticket.attachments %}
-                    <div class="mb-3">
-                        <h5>Attachments</h5>
-                        <ul class="list-group">
-                            {% for attachment in ticket.attachments %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <a href="{{ url_for('static', filename='uploads/' + attachment.filename) }}" target="_blank">
-                                        {{ attachment.filename }}
-                                    </a>
-                                    <span class="badge bg-secondary">{{ attachment.file_size|filesizeformat }}</span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Comments</h5>
-            </div>
-            <div class="card-body">
-                {% for comment in ticket.comments %}
-                    {% if not comment.is_internal or current_user.role in ['agent', 'admin'] %}
-                        <div class="card mb-3">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <span>{{ comment.author.username }}</span>
-                                <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">{{ comment.content }}</p>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-
-                <form method="POST" action="{{ url_for('tickets.add_comment', ticket_id=ticket.id) }}">
-                    {{ comment_form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ comment_form.content(class="form-control", rows=3) }}
-                    </div>
-                    {% if current_user.role in ['agent', 'admin'] %}
-                        <div class="mb-3 form-check">
-                            {{ comment_form.is_internal(class="form-check-input") }}
-                            {{ comment_form.is_internal.label(class="form-check-label") }}
-                        </div>
-                    {% endif %}
-                    <div class="d-grid">
-                        {{ comment_form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        {% if current_user.role in ['agent', 'admin'] %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-8">
             <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Update Ticket</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Ticket #{{ ticket.id }}: {{ ticket.subject }}</h3>
+                    <div>
+                        <span class="badge me-2" style="background-color: {{ ticket.status_obj.color }}">
+                            {{ ticket.status_obj.name }}
+                        </span>
+                        <span class="badge" style="background-color: {{ ticket.priority_level.color }}">
+                            {{ ticket.priority_level.name }}
+                        </span>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('tickets.update_ticket', ticket_id=ticket.id) }}">
-                        {{ update_form.hidden_tag() }}
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <div class="rich-text-content">
+                            {{ ticket.description | safe }}
+                        </div>
+                    </div>
+
+                    {% if ticket.tags %}
+                    <div class="mb-4">
+                        <h5>Tags</h5>
+                        <div>
+                            {% for tag in ticket.tags %}
+                            <span class="badge me-2" style="background-color: {{ tag.color }}">
+                                {{ tag.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if ticket.assets %}
+                    <div class="mb-4">
+                        <h5>Related Assets</h5>
+                        <div class="list-group">
+                            {% for asset in ticket.assets %}
+                            <a href="{{ url_for('assets.view_asset', asset_id=asset.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ asset.name }}</h6>
+                                        <small class="text-muted">Type: {{ asset.asset_type.name }}</small>
+                                    </div>
+                                    <span class="badge" style="background-color: {{ asset.status.color }}">
+                                        {{ asset.status.name }}
+                                    </span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        Created by {{ ticket.requester.username }} on {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% if ticket.updated_at != ticket.created_at %}
+                        | Last updated {{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Comments</h5>
+                </div>
+                <div class="card-body">
+                    {% if ticket.comments %}
+                    <div class="comments-list">
+                        {% for comment in ticket.comments %}
+                        <div class="comment mb-3">
+                            <div class="d-flex">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-1">{{ comment.author.username }}</h6>
+                                        <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    </div>
+                                    <div class="rich-text-content">
+                                        {{ comment.content | safe }}
+                                    </div>
+                                    {% if comment.attachments %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">Attachments:</small>
+                                        <ul class="list-unstyled mb-0">
+                                            {% for attachment in comment.attachments %}
+                                            <li>
+                                                <a href="{{ url_for('static', filename=attachment.file_path) }}" target="_blank">
+                                                    <i class="bi bi-paperclip"></i> {{ attachment.filename }}
+                                                </a>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No comments yet.</p>
+                    {% endif %}
+
+                    {% if ticket.status_obj.name != 'Closed' %}
+                    <form method="POST" action="{{ url_for('tickets.add_comment', ticket_id=ticket.id) }}" class="mt-4" enctype="multipart/form-data">
+                        {{ comment_form.csrf_token }}
                         <div class="mb-3">
-                            {{ update_form.status.label(class="form-label") }}
-                            {{ update_form.status(class="form-select") }}
+                            <label for="content" class="form-label">Add Comment</label>
+                            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                        </div>
+                        {% if current_user.role in ['admin', 'agent'] %}
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_internal" name="is_internal" value="1">
+                                <label class="form-check-label" for="is_internal">
+                                    Internal Comment (visible only to staff)
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="mb-3">
+                            <label for="attachments" class="form-label">Attachments</label>
+                            <input type="file" class="form-control" id="attachments" name="attachments" multiple>
+                            <small class="text-muted">You can select multiple files</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Comment</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Ticket Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Category</dt>
+                        <dd class="col-sm-8">{{ ticket.ticket_category.name }}</dd>
+
+                        <dt class="col-sm-4">Channel</dt>
+                        <dd class="col-sm-8">{{ ticket.channel.name }}</dd>
+
+                        <dt class="col-sm-4">Requester</dt>
+                        <dd class="col-sm-8">{{ ticket.requester.username }}</dd>
+
+                        {% if ticket.agent %}
+                        <dt class="col-sm-4">Assigned To</dt>
+                        <dd class="col-sm-8">{{ ticket.agent.username }}</dd>
+                        {% endif %}
+
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8">{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+
+                        {% if ticket.updated_at != ticket.created_at %}
+                        <dt class="col-sm-4">Last Updated</dt>
+                        <dd class="col-sm-8">{{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+
+            {% if current_user.role in ['admin', 'agent'] %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Ticket Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('tickets.update_ticket', ticket_id=ticket.id) }}" class="mb-3">
+                        {{ form.csrf_token }}
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status" required>
+                                {% for status in statuses %}
+                                <option value="{{ status.id }}" {% if status.id == ticket.status_id %}selected{% endif %}>
+                                    {{ status.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="mb-3">
-                            {{ update_form.assigned_agent.label(class="form-label") }}
-                            {{ update_form.assigned_agent(class="form-select") }}
+                            <label for="assigned_to" class="form-label">Assign To</label>
+                            <select class="form-select" id="assigned_to" name="assigned_to">
+                                <option value="0">Unassigned</option>
+                                {% for user in users %}
+                                <option value="{{ user.id }}" {% if user.id == ticket.assigned_agent_id %}selected{% endif %}>
+                                    {{ user.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="mb-3">
-                            {{ update_form.priority.label(class="form-label") }}
-                            {{ update_form.priority(class="form-select") }}
+                            <label for="priority" class="form-label">Priority</label>
+                            <select class="form-select" id="priority" name="priority" required>
+                                {% for priority in priorities %}
+                                <option value="{{ priority.id }}" {% if priority.id == ticket.priority_id %}selected{% endif %}>
+                                    {{ priority.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        <div class="d-grid">
-                            {{ update_form.submit(class="btn btn-primary") }}
-                        </div>
+                        <button type="submit" class="btn btn-primary">Update Ticket</button>
                     </form>
                 </div>
             </div>
-        {% endif %}
+            {% endif %}
 
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Ticket Details</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>Ticket ID:</strong> #{{ ticket.id }}</p>
-                <p><strong>Status:</strong> {{ ticket.status }}</p>
-                <p><strong>Priority:</strong> {{ ticket.priority }}</p>
-                <p><strong>Category:</strong> {{ ticket.category }}</p>
-                <p><strong>Created:</strong> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                <p><strong>Last Updated:</strong> {{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                {% if ticket.closed_at %}
-                    <p><strong>Closed:</strong> {{ ticket.closed_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                {% endif %}
+            <!-- Status Change History -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Status Change History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Changes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in ticket.audit_logs.filter_by(action='update').all() %}
+                                <tr>
+                                    <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ log.user.username }}</td>
+                                    <td>
+                                        {% for field, change in log.changes.items() %}
+                                        <div>
+                                            <strong>{{ field.replace('_id', '')|title }}:</strong>
+                                            {% if field == 'status_id' %}
+                                                {{ change.old_name }} → {{ change.new_name }}
+                                            {% elif field == 'priority_id' %}
+                                                {{ change.old_name }} → {{ change.new_name }}
+                                            {% elif field == 'assigned_agent_id' %}
+                                                {{ change.old_name }} → {{ change.new_name }}
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

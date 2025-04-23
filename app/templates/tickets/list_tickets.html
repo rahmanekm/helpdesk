@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Tickets</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" onclick="window.location.href='{{ url_for('tickets.submit_ticket') }}'">
+                <i class="bi bi-plus-circle me-2"></i>New Ticket
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="search" class="form-control" placeholder="Search tickets...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select">
+                        <option value="">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="pending">Pending</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select">
+                        <option value="">All Priority</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select">
+                        <option value="">All Agents</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Tickets</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download me-2"></i>Export
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-funnel me-2"></i>Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th style="width: 50px;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="">
+                                </div>
+                            </th>
+                            <th>ID</th>
+                            <th>Subject</th>
+                            <th>Requester</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Category</th>
+                            <th>Created</th>
+                            <th>Last Updated</th>
+                            {% if current_user.role in ['agent', 'admin'] %}
+                            <th>Assigned To</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ ticket.id }}">
+                                </div>
+                            </td>
+                            <td>#{{ ticket.id }}</td>
+                            <td>
+                                <a href="{{ url_for('tickets.view_ticket', ticket_id=ticket.id) }}" class="text-decoration-none">
+                                    {{ ticket.subject }}
+                                </a>
+                            </td>
+                            <td>{{ ticket.requester.username }}</td>
+                            <td>
+                                <span class="ticket-status status-{{ ticket.status }}">
+                                    {{ ticket.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if ticket.priority == 'High' else 'warning' if ticket.priority == 'Medium' else 'info' }}">
+                                    {{ ticket.priority }}
+                                </span>
+                            </td>
+                            <td>{{ ticket.category.name }}</td>
+                            <td>{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            {% if current_user.role in ['agent', 'admin'] %}
+                            <td>{{ ticket.assigned_agent.username if ticket.assigned_agent else 'Unassigned' }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    Showing {{ tickets|length }} of {{ total_tickets }} tickets
+                </div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

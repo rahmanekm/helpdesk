@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="text-end mb-3">
+                <div class="btn-group" role="group" aria-label="Article voting">
+                    <button type="button" class="btn btn-outline-success vote-btn {% if user_vote == true %}active{% endif %}" 
+                            data-helpful="true" data-article-id="{{ article.id }}">
+                        <i class="fas fa-thumbs-up"></i> Helpful
+                        <span class="helpful-count">{{ article.helpful_count }}</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger vote-btn {% if user_vote == false %}active{% endif %}" 
+                            data-helpful="false" data-article-id="{{ article.id }}">
+                        <i class="fas fa-thumbs-down"></i> Not Helpful
+                        <span class="not-helpful-count">{{ article.not_helpful_count }}</span>
+                    </button>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 mb-2">{{ article.title }}</h1>
+                            <div class="d-flex gap-3 text-muted small">
+                                <span><i class="bi bi-person me-1"></i>{{ article.author.username }}</span>
+                                <span><i class="bi bi-calendar me-1"></i>{{ article.created_at.strftime('%B %d, %Y') }}</span>
+                                <span><i class="bi bi-eye me-1"></i>{{ article.views }} views</span>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('knowledge_base.edit_article', id=article.id) }}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{{ url_for('knowledge_base.delete_article', id=article.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to delete this article?');">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="article-content mb-4">
+                        {{ article.content|safe }}
+                    </div>
+
+                    <div class="d-flex gap-2 mb-4">
+                        {% for tag in article.tags %}
+                        <span class="badge bg-light text-dark">{{ tag.name }}</span>
+                        {% endfor %}
+                    </div>
+
+
+                </div>
+            </div>
+
+            <!-- Comments -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Comments</h5>
+                </div>
+                <div class="card-body">
+                    <form class="mb-4" action="{{ url_for('knowledge_base.add_comment', article_id=article.id) }}" method="POST">
+                        {{ form.csrf_token }}
+                        <div class="mb-3">
+                            {{ form.content(class='form-control', rows=3, placeholder='Add a comment...') }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post Comment</button>
+                    </form>
+
+                    <div class="comments">
+                        {% for comment in article.comments %}
+                        <div class="comment mb-3">
+                            <div class="d-flex gap-3">
+                                <div class="flex-shrink-0">
+                                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        {{ comment.author.username[:1]|upper }}
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0">{{ comment.author.username }}</h6>
+                                        <small class="text-muted">{{ comment.created_at.strftime('%B %d, %Y %H:%M') }}</small>
+                                    </div>
+                                    <p class="mb-0">{{ comment.content }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Article Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Article Info</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <strong>Status:</strong>
+                            <span class="badge bg-{{ 'success' if article.status == 'Published' else 'warning' if article.status == 'Draft' else 'secondary' }}">
+                                {{ article.status }}
+                            </span>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Category:</strong>
+                            <a href="{{ url_for('knowledge_base.category_articles', category_id=article.category.id) }}" class="text-decoration-none">
+                                {{ article.category.name }}
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Last Updated:</strong>
+                            {{ article.updated_at.strftime('%B %d, %Y %H:%M') }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Related Articles -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Related Articles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for related in related_articles %}
+                        <a href="{{ url_for('knowledge_base.view_article', id=related.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ related.title }}</h6>
+                                <small class="text-muted">{{ related.views }} views</small>
+                            </div>
+                            <small class="text-muted">{{ related.category.name }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const voteButtons = document.querySelectorAll('.vote-btn');
+    
+    voteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const articleId = this.dataset.articleId;
+            const isHelpful = this.dataset.helpful === 'true';
+            
+            fetch(`/knowledge_base/articles/${articleId}/vote`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    is_helpful: isHelpful
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update vote counts
+                document.querySelector('.helpful-count').textContent = data.helpful_count;
+                document.querySelector('.not-helpful-count').textContent = data.not_helpful_count;
+                
+                // Update button states
+                const helpfulBtn = document.querySelector('[data-helpful="true"]');
+                const notHelpfulBtn = document.querySelector('[data-helpful="false"]');
+                
+                helpfulBtn.classList.remove('active');
+                notHelpfulBtn.classList.remove('active');
+                
+                if (data.user_vote === true) {
+                    helpfulBtn.classList.add('active');
+                } else if (data.user_vote === false) {
+                    notHelpfulBtn.classList.add('active');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while voting.');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

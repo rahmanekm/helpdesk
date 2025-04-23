@@ -1,0 +1,36 @@
+/* Custom CSS */
+
+.navbar-dark .navbar-brand {
+    color: #fff;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #fff;
+}
+
+.bg-primary {
+    background-color: #17a2b8 !important; /* A more modern shade of blue */
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa; /* Light gray background */
+}
+
+.container {
+    max-width: 1200px; /* Wider container */
+}
+
+.alert-info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+.alert-info .btn-close {
+    color: #31708f;
+}

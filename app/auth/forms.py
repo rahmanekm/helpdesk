@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 from wtforms import ValidationError
 from ..models import User
@@ -16,15 +16,6 @@ class RegistrationForm(FlaskForm):
         DataRequired(), Length(1, 64),
         Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                'Usernames must have only letters, numbers, dots or underscores')])
-    department = SelectField('Department', choices=[
-        ('IT', 'IT'),
-        ('HR', 'Human Resources'),
-        ('Finance', 'Finance'),
-        ('Operations', 'Operations'),
-        ('Sales', 'Sales'),
-        ('Marketing', 'Marketing'),
-        ('Other', 'Other')
-    ])
     password = PasswordField('Password', validators=[
         DataRequired(), EqualTo('password2', message='Passwords must match.')])
     password2 = PasswordField('Confirm password', validators=[DataRequired()])

@@ -1,12 +1,40 @@
+# Core dependencies
 Flask==3.0.2
 Flask-SQLAlchemy==3.1.1
 Flask-Login==0.6.3
 Flask-WTF==1.2.1
 Flask-Mail==0.9.1
 Flask-Migrate==4.0.5
-python-dotenv==1.0.1
-mysqlclient==2.2.4
 Werkzeug==3.0.1
-email-validator==2.1.0.post1
+
+# Database and caching
+mysqlclient==2.2.4
+Flask-Caching==2.1.0
+redis==5.0.1
+
+# Performance and optimization
+gunicorn==21.2.0
+Flask-Compress==1.14
+Flask-Assets==2.1.0
+
+# File handling and processing
 Pillow==10.2.0
+python-magic==0.4.27
+
+# Utilities
+python-dotenv==1.0.1
+email-validator==2.1.0.post1
 python-dateutil==2.8.2
+markdown==3.5.2
+bleach==6.1.0
+
+# API and WebSocket support
+Flask-SocketIO==5.3.6
+Flask-RESTful==0.3.10
+
+# Task queue
+Celery==5.3.6
+# Development and testing
+flake8==7.0.0
+# Development and testing
+flake8==7.0.0

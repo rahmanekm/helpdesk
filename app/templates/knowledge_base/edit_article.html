@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if article else 'Create' }} Article - IT Helpdesk{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ck-editor__editable {
+        min-height: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h2>{{ 'Edit' if article else 'Create' }} Article</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('knowledge_base.edit_article', id=article.id) if article else url_for('knowledge_base.create_article') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                            {% for error in form.title.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.content.label(class="form-label") }}
+                            {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else ""), id="editor") }}
+                            {% for error in form.content.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.category.label(class="form-label") }}
+                                {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                                {% for error in form.category.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.status.label(class="form-label") }}
+                                {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                                {% for error in form.status.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.tags.label(class="form-label") }}
+                            {{ form.tags(class="form-control" + (" is-invalid" if form.tags.errors else "")) }}
+                            <small class="form-text text-muted">Separate tags with commas</small>
+                            {% for error in form.tags.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('knowledge_base.list_articles') }}" class="btn btn-secondary me-md-2">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: [
+                'heading', '|',
+                'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+                'outdent', 'indent', '|',
+                'blockQuote', 'insertTable', 'undo', 'redo'
+            ],
+            table: {
+                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
+</script>
+{% endblock %} 
