@@ -36,6 +36,12 @@ def create_app(config_name='development'):
     from .it_assets import bp as it_assets_blueprint
     app.register_blueprint(it_assets_blueprint, url_prefix='/it_assets')
     
+    from .subscriptions import bp as subscriptions_blueprint
+    app.register_blueprint(subscriptions_blueprint, url_prefix='/subscriptions')
+
+    from .office_inventory import bp as office_inventory_blueprint
+    app.register_blueprint(office_inventory_blueprint, url_prefix='/office_inventory')
+
     from .users.views import bp as users_blueprint # Import the bp object from views
     app.register_blueprint(users_blueprint, url_prefix='/users') # Register the correct blueprint object
 

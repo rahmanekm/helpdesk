@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Office Inventory Item Details</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ item.item_name }}</h5>
+            <p class="card-text"><strong>Category:</strong> {{ item.category if item.category else 'N/A' }}</p>
+            <p class="card-text"><strong>Quantity:</strong> {{ item.quantity }}</p>
+            <p class="card-text"><strong>Location:</strong> {{ item.location if item.location else 'N/A' }}</p>
+            <p class="card-text"><strong>Purchase Date:</strong> {{ item.purchase_date.strftime('%Y-%m-%d') if item.purchase_date else 'N/A' }}</p>
+            <p class="card-text"><strong>Cost:</strong> {{ "%.2f"|format(item.cost) if item.cost is not none else 'N/A' }}</p>
+            <p class="card-text"><strong>Status:</strong> {{ item.status }}</p>
+            <p class="card-text"><strong>Assigned To:</strong> {{ item.assigned_to.username if item.assigned_to else 'Unassigned' }}</p>
+            <p class="card-text"><strong>Notes:</strong> {{ item.notes if item.notes else 'N/A' }}</p>
+            <p class="card-text"><strong>Created At:</strong> {{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p class="card-text"><strong>Last Updated:</strong> {{ item.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <a href="{{ url_for('office_inventory.edit_inventory_item', id=item.id) }}" class="btn btn-warning">Edit</a>
+            <form action="{{ url_for('office_inventory.delete_inventory_item', id=item.id) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this item?');">Delete</button>
+            </form>
+            <a href="{{ url_for('office_inventory.list_inventory') }}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

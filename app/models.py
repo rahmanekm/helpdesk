@@ -394,6 +394,51 @@ class Asset(db.Model):
     def __repr__(self):
         return f'<Asset {self.name}>'
 
+class Subscription(db.Model):
+    __tablename__ = 'subscriptions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    vendor = db.Column(db.String(100))
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    renewal_date = db.Column(db.DateTime)
+    cost = db.Column(db.Float)
+    frequency = db.Column(db.String(50)) # e.g., monthly, annually
+    status = db.Column(db.String(50)) # e.g., Active, Expired, Pending Renewal
+    notes = db.Column(db.Text)
+    assigned_to_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    assigned_to = db.relationship('User', backref='subscriptions_assigned', foreign_keys=[assigned_to_id])
+
+    def __repr__(self):
+        return f'<Subscription {self.name}>'
+
+class OfficeInventory(db.Model):
+    __tablename__ = 'office_inventory'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    item_name = db.Column(db.String(100), nullable=False)
+    category = db.Column(db.String(50)) # e.g., Furniture, Electronics, Peripherals
+    quantity = db.Column(db.Integer, nullable=False)
+    location = db.Column(db.String(100))
+    purchase_date = db.Column(db.DateTime)
+    cost = db.Column(db.Float)
+    status = db.Column(db.String(50)) # e.g., In Use, Available, Damaged
+    notes = db.Column(db.Text)
+    assigned_to_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    assigned_to = db.relationship('User', backref='inventory_assigned', foreign_keys=[assigned_to_id])
+
+    def __repr__(self):
+        return f'<OfficeInventory {self.item_name}>'
+
 class AuditLog(db.Model):
     __tablename__ = 'audit_logs'
     id = db.Column(db.Integer, primary_key=True)

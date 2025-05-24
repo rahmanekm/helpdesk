@@ -16,7 +16,7 @@
     <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
     <style>
         :root {
-            --primary-color: #4e73df;...
+            --primary-color: #4e73df;
             --secondary-color: #858796;
             --success-color: #1cc88a;
             --info-color: #36b9cc;
@@ -192,15 +192,27 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('it_assets.list_assets') }}">
                             <i class="bi bi-laptop me-1"></i>IT Assets
-                                                </a>
-                                            </li>
-                                            {% if current_user.is_authenticated and current_user.is_admin %}
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="{{ url_for('users.list_users') }}">
-                                                    <i class="bi bi-people me-1"></i>User Management
-                                                </a>
-                                            </li>
-                                            {% endif %}
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('subscriptions.list_subscriptions') }}">
+                            <i class="bi bi-calendar-check me-1"></i>Subscriptions & Renewals
+                        </a>
+                    </li>
+                    {% if current_user.is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('office_inventory.list_inventory') }}">
+                            <i class="bi bi-building me-1"></i>Office Inventory
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('users.list_users') }}">
+                            <i class="bi bi-people me-1"></i>User Management
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     {% if current_user.is_authenticated %}
@@ -286,4 +298,4 @@
     </script>
     {% endblock %}
 </body>
-</html> 
+</html>

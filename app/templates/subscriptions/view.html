@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Subscription Details</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ subscription.name }}</h5>
+            <p class="card-text"><strong>Vendor:</strong> {{ subscription.vendor if subscription.vendor else 'N/A' }}</p>
+            <p class="card-text"><strong>Start Date:</strong> {{ subscription.start_date.strftime('%Y-%m-%d') if subscription.start_date else 'N/A' }}</p>
+            <p class="card-text"><strong>End Date:</strong> {{ subscription.end_date.strftime('%Y-%m-%d') if subscription.end_date else 'N/A' }}</p>
+            <p class="card-text"><strong>Renewal Date:</strong> {{ subscription.renewal_date.strftime('%Y-%m-%d') if subscription.renewal_date else 'N/A' }}</p>
+            <p class="card-text"><strong>Cost:</strong> {{ "%.2f"|format(subscription.cost) if subscription.cost is not none else 'N/A' }}</p>
+            <p class="card-text"><strong>Frequency:</strong> {{ subscription.frequency | title if subscription.frequency else 'N/A' }}</p>
+            <p class="card-text"><strong>Status:</strong> {{ subscription.status }}</p>
+            <p class="card-text"><strong>Assigned To:</strong> {{ subscription.assigned_to.username if subscription.assigned_to else 'Unassigned' }}</p>
+            <p class="card-text"><strong>Notes:</strong> {{ subscription.notes if subscription.notes else 'N/A' }}</p>
+            <p class="card-text"><strong>Created At:</strong> {{ subscription.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p class="card-text"><strong>Last Updated:</strong> {{ subscription.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <a href="{{ url_for('subscriptions.edit_subscription', id=subscription.id) }}" class="btn btn-warning">Edit</a>
+            <form action="{{ url_for('subscriptions.delete_subscription', id=subscription.id) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this subscription?');">Delete</button>
+            </form>
+            <a href="{{ url_for('subscriptions.list_subscriptions') }}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
