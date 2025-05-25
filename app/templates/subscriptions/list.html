@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Subscriptions and Renewals</h2>
+        <div>
+            <a href="{{ url_for('subscriptions.renewal_logs') }}" class="btn btn-info">Renewal Logs</a>
+            <a href="{{ url_for('subscriptions.create_subscription') }}" class="btn btn-primary">Add New Subscription</a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if subscriptions %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Vendor</th>
+                    <th>Renewal Date</th>
+                    <th>Cost</th>
+                    <th>Frequency</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subscription in subscriptions %}
+                <tr>
+                    <td>{{ subscription.name }}</td>
+                    <td>{{ subscription.vendor }}</td>
+                    <td>{{ subscription.renewal_date.strftime('%Y-%m-%d') if subscription.renewal_date else 'Not Set' }}</td>
+                    <td>{{ "%.2f"|format(subscription.cost) if subscription.cost is not none else 'N/A' }}</td>
+                    <td>{{ subscription.frequency | title if subscription.frequency else 'N/A' }}</td>
+                    <td>{{ subscription.status }}</td>
+                    <td>{{ subscription.assigned_to.username if subscription.assigned_to else 'Unassigned' }}</td>
+                    <td>
+                        <a href="{{ url_for('subscriptions.view_subscription', id=subscription.id) }}" class="btn btn-info btn-sm">View</a>
+                        <a href="{{ url_for('subscriptions.edit_subscription', id=subscription.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{{ url_for('subscriptions.renew_subscription', id=subscription.id) }}" class="btn btn-success btn-sm">Renew</a>
+                        <a href="{{ url_for('subscriptions.subscription_renewal_logs', subscription_id=subscription.id) }}" class="btn btn-secondary btn-sm">Logs</a>
+                        <form action="{{ url_for('subscriptions.delete_subscription', id=subscription.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this subscription?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No subscriptions found. <a href="{{ url_for('subscriptions.create_subscription') }}">Add one now!</a></p>
+    {% endif %}
+</div>
+{% endblock %}

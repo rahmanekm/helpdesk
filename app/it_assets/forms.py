@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, DateField, FloatField, TextAreaField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional
+from ..models import User # Import User model
 
 class AssetForm(FlaskForm):
     name = StringField('Name', validators=[
@@ -38,6 +39,10 @@ class AssetForm(FlaskForm):
         Optional(),
         Length(max=100)
     ])
-    assigned_to = SelectField('Assigned To', coerce=int, validators=[Optional()])
+    assigned_to = SelectField(
+        'Assigned To',
+        coerce=int,
+        validators=[
+            Optional()])
     notes = TextAreaField('Notes', validators=[Optional()])
-    submit = SubmitField('Save') 
+    submit = SubmitField('Save')

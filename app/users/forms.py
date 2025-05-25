@@ -3,10 +3,17 @@ from wtforms import StringField, PasswordField, SelectField, BooleanField, Submi
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from ..models import User
 
+
 class UserForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
-    full_name = StringField('Full Name', validators=[DataRequired(), Length(max=100)])
+    username = StringField(
+        'Username', validators=[
+            DataRequired(), Length(
+                min=3, max=80)])
+    full_name = StringField(
+        'Full Name', validators=[
+            DataRequired(), Length(
+                max=100)])
     role = SelectField('Role', choices=[
         ('customer', 'Customer'),
         ('agent', 'Agent'),
@@ -28,6 +35,7 @@ class UserForm(FlaskForm):
         if user and (not hasattr(self, 'user') or user.id != self.user.id):
             raise ValidationError('Username already taken.')
 
+
 class PasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[
         DataRequired(),
@@ -39,9 +47,11 @@ class PasswordForm(FlaskForm):
     ])
     submit = SubmitField('Set Password')
 
+
 class PasswordResetRequestForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Request Password Reset')
+
 
 class PasswordResetForm(FlaskForm):
     password = PasswordField('New Password', validators=[

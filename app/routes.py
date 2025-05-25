@@ -2,15 +2,18 @@ from flask import render_template, redirect, url_for, flash
 from flask_login import login_required
 from app.models import Asset
 from app.forms import AssetForm
-from app.extensions import db
+from app import db # Assuming db is accessible from app package
+from app.main import main
 
-@bp.route('/assets')
+
+@main.route('/assets')
 @login_required
 def list_assets():
     assets = Asset.query.all()
     return render_template('assets/list.html', assets=assets)
 
-@bp.route('/assets/create', methods=['GET', 'POST'])
+
+@main.route('/assets/create', methods=['GET', 'POST'])
 @login_required
 def create_asset():
     form = AssetForm()
@@ -27,21 +30,22 @@ def create_asset():
             cost=form.cost.data,
             location=form.location.data,
             assigned_to_id=form.assigned_to.data if form.assigned_to.data != 0 else None,
-            notes=form.notes.data
-        )
+            notes=form.notes.data)
         db.session.add(asset)
         db.session.commit()
         flash('Asset created successfully!', 'success')
         return redirect(url_for('main.list_assets'))
     return render_template('assets/create.html', form=form)
 
-@bp.route('/assets/<int:asset_id>')
+
+@main.route('/assets/<int:asset_id>')
 @login_required
 def view_asset(asset_id):
     asset = Asset.query.get_or_404(asset_id)
     return render_template('assets/view.html', asset=asset)
 
-@bp.route('/assets/<int:asset_id>/edit', methods=['GET', 'POST'])
+
+@main.route('/assets/<int:asset_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_asset(asset_id):
     asset = Asset.query.get_or_404(asset_id)
@@ -64,11 +68,12 @@ def edit_asset(asset_id):
         return redirect(url_for('main.view_asset', asset_id=asset.id))
     return render_template('assets/edit.html', form=form, asset=asset)
 
-@bp.route('/assets/<int:asset_id>/delete', methods=['POST'])
+
+@main.route('/assets/<int:asset_id>/delete', methods=['POST'])
 @login_required
 def delete_asset(asset_id):
     asset = Asset.query.get_or_404(asset_id)
     db.session.delete(asset)
     db.session.commit()
     flash('Asset deleted successfully!', 'success')
-    return redirect(url_for('main.list_assets')) 
+    return redirect(url_for('main.list_assets'))

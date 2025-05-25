@@ -116,9 +116,9 @@ def init_db():
         # Create sample articles
         articles = [
             {
-                'title': 'Welcome to IT Helpdesk',
+                'title': 'Welcome to Forefront IT Helpdesk',
                 'content': '''
-                <h2>Welcome to IT Helpdesk!</h2>
+                <h2>Welcome to Forefront IT Helpdesk!</h2>
                 <p>This article will help you get started with our platform.</p>
                 <h3>Key Features:</h3>
                 <ul>
