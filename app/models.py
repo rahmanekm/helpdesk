@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
     organization = db.Column(db.String(100))
     phone = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     submitted_tickets = db.relationship('Ticket', backref='submitter', lazy='dynamic',
                                       foreign_keys='Ticket.submitter_id')
@@ -31,22 +31,22 @@ class User(UserMixin, db.Model):
     articles = db.relationship('Article', backref='author', lazy=True)
     assigned_assets = db.relationship('Asset', backref='assigned_to', lazy='dynamic')
     audit_logs = db.relationship('AuditLog', backref='user')
-    
+
     # Add two-factor authentication fields
     two_factor_enabled = db.Column(db.Boolean, default=False)
     two_factor_secret = db.Column(db.String(32))
-    
+
     @property
     def is_admin(self):
         return self.role == 'admin'
-    
+
     @property
     def is_agent(self):
         return self.role == 'agent'
-    
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-        
+
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
@@ -71,7 +71,7 @@ class Category(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     tickets = db.relationship('Ticket', backref='ticket_category', lazy='dynamic')
     articles = db.relationship('Article', backref='category', lazy=True)
@@ -92,13 +92,13 @@ class Ticket(db.Model):
     resolution_time = db.Column(db.Integer)  # in minutes
     is_merged = db.Column(db.Boolean, default=False)
     parent_ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'))
-    
+
     # Foreign keys
     submitter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     assigned_agent_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
-    
+
     # Relationships
     comments = db.relationship('Comment', backref='ticket', lazy='dynamic')
     attachments = db.relationship('Attachment', backref='ticket', lazy='dynamic')
@@ -112,18 +112,18 @@ class Ticket(db.Model):
                                backref=db.backref('ticket', lazy='joined'),
                                lazy='dynamic',
                                order_by='desc(AuditLog.timestamp)')
-    
+
     def get_status(self):
         return self.status_obj.name if self.status_obj else 'Unknown'
-    
+
     def get_priority(self):
         return self.priority_level.name if self.priority_level else 'Medium'
-    
+
     def is_overdue(self):
         if self.due_date and datetime.utcnow() > self.due_date:
             return True
         return False
-    
+
     def merge_with(self, other_ticket):
         if other_ticket.id != self.id:
             other_ticket.is_merged = True
@@ -137,7 +137,7 @@ class Comment(db.Model):
     content = db.Column(db.Text, nullable=False)
     is_internal = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Foreign keys
     ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'))
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -150,7 +150,7 @@ class Attachment(db.Model):
     file_type = db.Column(db.String(50))
     file_size = db.Column(db.Integer)  # in bytes
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Foreign keys
     ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'))
     message_id = db.Column(db.Integer, db.ForeignKey('messages.id'))
@@ -161,7 +161,7 @@ class Notification(db.Model):
     message = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Foreign key
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -170,11 +170,11 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Foreign Keys
     ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    
+
     # Relationships
     attachments = db.relationship('Attachment', backref='message', lazy=True,
                                 foreign_keys='Attachment.message_id')
@@ -194,7 +194,7 @@ class ArticleVote(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     is_helpful = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Add unique constraint
     __table_args__ = (
         db.UniqueConstraint('article_id', 'user_id', name='uix_article_user_vote'),
@@ -213,15 +213,15 @@ class Article(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
     comments = db.relationship('ArticleComment', backref='article', lazy=True)
     votes = db.relationship('ArticleVote', backref='article', lazy=True)
-    
+
     @property
     def helpful_count(self):
         return sum(1 for vote in self.votes if vote.is_helpful)
-        
+
     @property
     def not_helpful_count(self):
         return sum(1 for vote in self.votes if not vote.is_helpful)
-        
+
     def get_user_vote(self, user):
         for vote in self.votes:
             if vote.user_id == user.id:
@@ -239,11 +239,11 @@ class ArticleComment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Foreign Keys
     article_id = db.Column(db.Integer, db.ForeignKey('articles.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    
+
     # Relationships
     author = db.relationship('User', backref='article_comments')
 
@@ -260,7 +260,7 @@ class TicketCustomField(db.Model):
     __tablename__ = 'ticket_custom_fields'
     id = db.Column(db.Integer, primary_key=True)
     value = db.Column(db.Text)
-    
+
     # Foreign Keys
     ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=False)
     field_id = db.Column(db.Integer, db.ForeignKey('custom_fields.id'), nullable=False)
@@ -285,7 +285,7 @@ class SLAViolation(db.Model):
     expected_time = db.Column(db.DateTime)
     actual_time = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Foreign Keys
     ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), nullable=False)
     sla_id = db.Column(db.Integer, db.ForeignKey('slas.id'), nullable=False)
@@ -371,7 +371,7 @@ ticket_assets = db.Table('ticket_assets',
 
 class Asset(db.Model):
     __tablename__ = 'assets'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     asset_type = db.Column(db.String(50), nullable=False)  # Hardware, Software, Network, etc.
@@ -396,14 +396,14 @@ class Asset(db.Model):
 
 class Subscription(db.Model):
     __tablename__ = 'subscriptions'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     vendor = db.Column(db.String(100))
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
-    renewal_date = db.Column(db.DateTime)
-    cost = db.Column(db.Float)
+    renewal_date = db.Column(db.DateTime) # Re-add original renewal_date
+    cost = db.Column(db.Float) # Ensure this line is present if it was shifted
     frequency = db.Column(db.String(50)) # e.g., monthly, annually
     status = db.Column(db.String(50)) # e.g., Active, Expired, Pending Renewal
     notes = db.Column(db.Text)
@@ -417,9 +417,29 @@ class Subscription(db.Model):
     def __repr__(self):
         return f'<Subscription {self.name}>'
 
+class SubscriptionRenewalLog(db.Model):
+    __tablename__ = 'subscription_renewal_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    subscription_id = db.Column(db.Integer, db.ForeignKey('subscriptions.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    previous_renewal_date = db.Column(db.DateTime)
+    new_renewal_date = db.Column(db.DateTime, nullable=False)
+    frequency = db.Column(db.String(50))
+    renewed_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    ip_address = db.Column(db.String(45))
+    notes = db.Column(db.Text)
+
+    # Relationships
+    subscription = db.relationship('Subscription', backref='renewal_logs')
+    user = db.relationship('User', backref='subscription_renewals')
+
+    def __repr__(self):
+        return f'<SubscriptionRenewalLog {self.subscription_id} by {self.user_id}>'
+
 class OfficeInventory(db.Model):
     __tablename__ = 'office_inventory'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     item_name = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50)) # e.g., Furniture, Electronics, Peripherals
@@ -449,7 +469,7 @@ class AuditLog(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     changes = db.Column(db.JSON)
     ip_address = db.Column(db.String(45))
-    
+
     __table_args__ = (
         db.Index('ix_audit_logs_entity', 'entity_type', 'entity_id'),
     )

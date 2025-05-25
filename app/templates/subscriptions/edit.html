@@ -20,20 +20,6 @@
             {% endfor %}
         </div>
         <div class="form-group">
-            {{ form.start_date.label(class="form-label") }}
-            {{ form.start_date(class="form-control") }}
-            {% for error in form.start_date.errors %}
-                <span class="text-danger">{{ error }}</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{ form.end_date.label(class="form-label") }}
-            {{ form.end_date(class="form-control") }}
-            {% for error in form.end_date.errors %}
-                <span class="text-danger">{{ error }}</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
             {{ form.renewal_date.label(class="form-label") }}
             {{ form.renewal_date(class="form-control") }}
             {% for error in form.renewal_date.errors %}
@@ -44,6 +30,13 @@
             {{ form.cost.label(class="form-label") }}
             {{ form.cost(class="form-control") }}
             {% for error in form.cost.errors %}
+                <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.currency.label(class="form-label") }}
+            {{ form.currency(class="form-control") }}
+            {% for error in form.currency.errors %}
                 <span class="text-danger">{{ error }}</span>
             {% endfor %}
         </div>

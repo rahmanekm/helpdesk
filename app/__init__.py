@@ -11,38 +11,45 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 mail = Mail()
 
+
 def create_app(config_name='development'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
-    
+
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
     mail.init_app(app)
-    
-    from .main import main as main_blueprint
+
+    from .main import main as main_blueprint # Reverted
     app.register_blueprint(main_blueprint)
-    
-    from .auth import auth as auth_blueprint
+
+    from .auth import auth as auth_blueprint # Reverted
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
-    
+
     from .knowledge_base import bp as knowledge_base_blueprint
-    app.register_blueprint(knowledge_base_blueprint, url_prefix='/knowledge_base')
-    
-    from .tickets import tickets as tickets_blueprint
+    app.register_blueprint(
+        knowledge_base_blueprint,
+        url_prefix='/knowledge_base')
+
+    from .tickets import tickets as tickets_blueprint # Reverted
     app.register_blueprint(tickets_blueprint, url_prefix='/tickets')
-    
+
     from .it_assets import bp as it_assets_blueprint
     app.register_blueprint(it_assets_blueprint, url_prefix='/it_assets')
-    
+
     from .subscriptions import bp as subscriptions_blueprint
-    app.register_blueprint(subscriptions_blueprint, url_prefix='/subscriptions')
+    app.register_blueprint(
+        subscriptions_blueprint,
+        url_prefix='/subscriptions')
 
     from .office_inventory import bp as office_inventory_blueprint
-    app.register_blueprint(office_inventory_blueprint, url_prefix='/office_inventory')
+    app.register_blueprint(
+        office_inventory_blueprint,
+        url_prefix='/office_inventory')
 
-    from .users.views import bp as users_blueprint # Import the bp object from views
-    app.register_blueprint(users_blueprint, url_prefix='/users') # Register the correct blueprint object
+    from .users import users as users_blueprint # Reverted
+    app.register_blueprint(users_blueprint) # url_prefix is in users/__init__.py
 
     return app
